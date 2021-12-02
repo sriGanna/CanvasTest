@@ -1,8 +1,27 @@
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
+// var canvas = document.getElementById('canvas');
+// var ctx = canvas.getContext('2d');
+
+let btn = document.createElement("button");
+btn.id = "btn";
+btn.innerHTML = "Play Haptic Rendering";
+document.body.appendChild(btn);
+
+let btn_com = document.createElement("button");
+btn_com.id = "com";
+btn_com.innerHTML = "Press Me!";
+document.body.appendChild(btn_com);
+
+btn_com.style.display = "none";
+
+document.getElementById("btn").addEventListener("click", function() {
+  createCanvas();
+  console.log("printed canvas");
+});
+
 var raf;
 var worker;
 const worldPixelWidth                     = 1000;
+
 var posBall = {
   x:0,
   y:0
@@ -16,6 +35,33 @@ var deviceOrigin ={
   x:worldPixelWidth/2,
   y:0
 };
+
+var x_trans = 100;
+
+
+function createCanvas(){
+  document.body.removeChild(btn);
+  btn_com.style.display = "block";
+ 
+
+  
+
+var canvas = document.createElement('canvas');
+
+canvas.id = "main";
+canvas.width = 800;
+canvas.height = 500;
+canvas.style.zIndex = 8;
+canvas.style.position = "absolute";
+canvas.style.border = "1px solid";
+canvas.style.left = "100px";
+canvas.style.top = "100px";
+
+
+var body = document.getElementsByTagName("body")[0];
+body.appendChild(canvas);
+
+var ctx = canvas.getContext('2d');
 
 /* Screen and world setup parameters */
 var pixelsPerMeter = 4000.0;
@@ -41,8 +87,14 @@ var border = {
   draw: function(){
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
   }
-
 };
+
+var box = {
+  draw:function(){
+    ctx.strokeRect(140,70,canvas.width-310, canvas.height-200);
+  }
+
+}
 
 
 var endEffector = {
@@ -74,6 +126,7 @@ canvas.addEventListener('mouseover', function(e) {
   raf = window.requestAnimationFrame(draw);
 });
 
+
 // canvas.addEventListener('mouseout', function(e) {
 //   window.cancelAnimationFrame(raf);
 // });
@@ -101,7 +154,7 @@ function checkBounds(){
 
 function updateAnimation(){
   border.draw();
-
+  box.draw();
   xE = posEE.x;
   yE = posEE.y;
   xB = posBall.x;
@@ -112,19 +165,29 @@ function updateAnimation(){
 
   //update ball
 
-  ball.x =deviceOrigin.x + xB * -pixelsPerMeter;
+  ball.x =deviceOrigin.x + xB * -pixelsPerMeter-x_trans;
   ball.y = deviceOrigin.y + yB * pixelsPerMeter;
   ball.draw();
     
 
   //update endEffector
-  endEffector.x = deviceOrigin.x +xE;
+  endEffector.x = deviceOrigin.x +xE-x_trans;
   endEffector.y = deviceOrigin.y+yE;
   endEffector.draw();
 }
 
 
-/******worker code******** */
+
+
+
+ball.draw();
+border.draw();
+box.draw();
+endEffector.draw();
+
+}
+
+  /******worker code******** */
 async function workerSetup(){
   let port = await navigator.serial.requestPort();
   worker.postMessage("test");
@@ -132,7 +195,7 @@ async function workerSetup(){
 
 if (window.Worker) {
   worker = new Worker("worker.js");
-  document.getElementById("button").addEventListener("click", workerSetup);
+  document.getElementById("com").addEventListener("click", workerSetup);
   worker.addEventListener("message", function(msg){
 
       posEE.x = msg.data.positions.x;
@@ -149,6 +212,6 @@ else {
 
 
 
-ball.draw();
-border.draw();
-endEffector.draw();
+
+
+
